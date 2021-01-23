@@ -7,6 +7,10 @@ class CityModel:
         self.model = regression_model
         self.name = city_name[::-1]  # reverse this Hebrew string
 
+    def predict(self, regressors):
+        predictions = self.model.predict(regressors[:, np.newaxis])
+        return predictions
+
     def show_regression(self, regressors):
         plt.figure(figsize=(8, 7))
         ax = plt.axes()
@@ -18,4 +22,6 @@ class CityModel:
         ax.plot(x_new, y_new)
 
         ax.axis('tight')
+        # ax.xaxis_date()
+        # plt.figure.autofmt_xdate()
         plt.show(block=True)

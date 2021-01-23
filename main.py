@@ -9,6 +9,7 @@ import requests
 
 from city_model import CityModel
 from enumerated_dates import EnumeratedDates
+import matplotlib.pyplot as plt
 
 print('{} version: {}'.format(np.__name__, np.__version__))
 print('{} version: {}'.format(pd.__name__, pd.__version__))
@@ -83,6 +84,17 @@ for row in ndata:
 
 # Just show some regressions for largest cities
 with dates:
-    models[0].show_regression(dates.labels)
-    models[1].show_regression(dates.labels)
-    models[2].show_regression(dates.labels)
+
+    # TODO
+    # plt.figure(figsize=(8, 7))
+    # fig, axs = plt.subplots(4)
+    # fig.suptitle('Infected spreads in most populated cities')
+    # x_new = np.linspace(0, 30, 100)
+    # for i in np.arange(0, 4):
+    #     y_new = models[i].predict(dates.labels)
+    #     axs[i].plot(x_new, y_new)
+    #     axs[i].set_title(models[i].name)
+    # plt.show()
+
+    for i in np.arange(0, 4):
+        models[i].show_regression(dates.labels)
