@@ -6,6 +6,14 @@ import io
 import numpy as np
 import pandas as pd
 import requests
+import joblib
+
+# Flask stuff
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 
 from city_model import CityModel
 from enumerated_dates import EnumeratedDates
@@ -50,6 +58,7 @@ df.replace('-', 0., inplace=True)  # prefer mutable version because it modifies 
 keys = df.keys()
 dates = EnumeratedDates(keys[2:])
 
+
 #
 # 3. Calculate the regression model parameters.
 # The function below will be called for each city (row) in the prepared dataset
@@ -64,8 +73,11 @@ def calculate_regression_params(x, y, name):
     # split the dataset into training part and test part
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
     model.fit(X_train, Y_train)
-    model.score(X_train, Y_train)  # check score
-    print('Regression coefficients. Intercept: {} Coefficient: {}'.format(model.intercept_, model.coef_))
+    score = model.score(X_test, Y_test)  # check score - the best possible score is 1.0
+    print('Score: {}. Intercept: {} Coefficient: {}'.format(score, model.intercept_[0], model.coef_[0, 0]))
+
+    # filename = 'finalized_model.sav'
+    # joblib.dump(model, filename)
 
     return CityModel(y, model, name)
 
@@ -80,11 +92,28 @@ for row in ndata:
     model = calculate_regression_params(dates.indices, row[2:], row[0])
     models = np.append(models, model)
 
-# np.apply_along_axis(calculate_regression_params, 1, ndata)
+def calc(row):
+    from sklearn import linear_model
+    from sklearn.model_selection import train_test_split
+    _model = linear_model.LinearRegression()
+
+    x = dates.indices
+    X = x.reshape(-1, 1)
+    y = row[2:]
+    Y = y.reshape(-1, 1)
+
+    # split the dataset into training part and test part
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
+    _model.fit(x_train, y_train)
+    score = _model.score(x_test, y_test)
+    print('Score: {}. Intercept: {} Coefficient: {}'.format(score, _model.intercept_[0], _model.coef_[0, 0]))
+
+    return CityModel(data=y, regression_model=model, city_name=row[0])
+
+_models = np.apply_along_axis(calc, 1, ndata)
 
 # Just show some regressions for largest cities
 with dates:
-
     # TODO
     # plt.figure(figsize=(8, 7))
     # fig, axs = plt.subplots(4)
@@ -97,4 +126,15 @@ with dates:
     # plt.show()
 
     for i in np.arange(0, 4):
-        models[i].show_regression(dates.labels)
+        _models[i].show_regression(dates.labels)
+
+STYLE = [dbc.themes.FLATLY]
+app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)
+app.layout = dbc.Container(
+    [
+        html.H1("Cyber COVID"),
+        html.Hr()
+    ], fluid=True
+)
+if __name__ == "__main__":
+    app.run_server()
