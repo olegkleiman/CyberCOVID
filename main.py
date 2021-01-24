@@ -79,7 +79,7 @@ def calculate_regression_params(x, y, name):
     # filename = 'finalized_model.sav'
     # joblib.dump(model, filename)
 
-    return CityModel(y, model, name, score)
+    return CityModel(city_name=name, data=y, regression_model=model, score=score)
 
 
 # Our Linear Regression model is based on SkLearn implementation which accept numpy arrays
@@ -91,6 +91,7 @@ for row in ndata:
     # First two columns are defined as 'City' and 'Population'. We skip them
     model = calculate_regression_params(dates.indices, row[2:], row[0])
     models = np.append(models, model)
+
 
 def calc(row):
     from sklearn import linear_model
@@ -110,11 +111,12 @@ def calc(row):
 
     return CityModel(data=y, regression_model=model, city_name=row[0], score=score)
 
+
 _models = np.apply_along_axis(calc, 1, ndata)
 
 # Just show some regressions for largest cities
 # if the model's score is acceptable according to score
-threshold = 0.9
+THRESHOLD = 0.9
 with dates:
     # TODO
     # plt.figure(figsize=(8, 7))
@@ -128,7 +130,7 @@ with dates:
     # plt.show()
 
     for i in np.arange(0, 4):
-        if _models[i].score > threshold:
+        if _models[i].score > THRESHOLD:
             _models[i].show_regression(dates.labels)
 
 # STYLE = [dbc.themes.FLATLY]
