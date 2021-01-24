@@ -30,7 +30,7 @@ print('{} version: {}'.format(pd.__name__, pd.__version__))
 url = "https://raw.githubusercontent.com/idandrd/israel-covid19-data/master/CityData.csv"
 s = requests.get(url).content
 
-_df = pd.read_csv(io.StringIO(s.decode('utf-8')))
+df = pd.read_csv(io.StringIO(s.decode('utf-8')))
 
 #
 # 2. Prepare the downloaded data for further analysis
@@ -46,9 +46,9 @@ _df = pd.read_csv(io.StringIO(s.decode('utf-8')))
 # 2a. Throw out nan values and other mess from the downloaded DataFrame.
 #   Thanks to God, Pandas has built-in functions for such a purpose
 # Output of Step 2a: df
-df = _df.fillna(0)
+df.fillna(0, inplace=True)
 df.replace('-', 0., inplace=True)  # prefer mutable version because it modifies other views
-# print(df2)
+# print(df)
 
 #
 # 2b. Prepare the dates obtained from the DataFrame to participate in regression:
@@ -79,7 +79,7 @@ def calculate_regression_params(x, y, name):
     # filename = 'finalized_model.sav'
     # joblib.dump(model, filename)
 
-    return CityModel(y, model, name)
+    return CityModel(y, model, name, score)
 
 
 # Our Linear Regression model is based on SkLearn implementation which accept numpy arrays
@@ -108,11 +108,13 @@ def calc(row):
     score = _model.score(x_test, y_test)
     print('Score: {}. Intercept: {} Coefficient: {}'.format(score, _model.intercept_[0], _model.coef_[0, 0]))
 
-    return CityModel(data=y, regression_model=model, city_name=row[0])
+    return CityModel(data=y, regression_model=model, city_name=row[0], score=score)
 
 _models = np.apply_along_axis(calc, 1, ndata)
 
 # Just show some regressions for largest cities
+# if the model's score is acceptable according to score
+threshold = 0.9
 with dates:
     # TODO
     # plt.figure(figsize=(8, 7))
@@ -126,15 +128,16 @@ with dates:
     # plt.show()
 
     for i in np.arange(0, 4):
-        _models[i].show_regression(dates.labels)
+        if _models[i].score > threshold:
+            _models[i].show_regression(dates.labels)
 
-STYLE = [dbc.themes.FLATLY]
-app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)
-app.layout = dbc.Container(
-    [
-        html.H1("Cyber COVID"),
-        html.Hr()
-    ], fluid=True
-)
-if __name__ == "__main__":
-    app.run_server()
+# STYLE = [dbc.themes.FLATLY]
+# app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)
+# app.layout = dbc.Container(
+#     [
+#         html.H1("Cyber COVID"),
+#         html.Hr()
+#     ], fluid=True
+# )
+# if __name__ == "__main__":
+#     app.run_server()
