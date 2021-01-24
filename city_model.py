@@ -1,13 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import joblib
 
 from model1d import Model1D
 
 
 class CityModel(Model1D):
     def __init__(self, city_name, data, regression_model, score):
-        Model1D.__init__(self, data, regression_model, score)
+        super().__init__(data, regression_model, score)
         self.name = city_name[::-1]  # reverse this Hebrew string
+
+    def save(self):
+        filename = self.name + 'sav'
+        joblib.dump(self.model, filename)
+
+    def load(self):
+        filename = self.name + 'sav'
+        self.model= joblib.load(filename)
 
     def show_regression(self, regressors):
         plt.isinteractive(True)

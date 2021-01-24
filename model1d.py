@@ -4,6 +4,9 @@ class Model1D:
         self.model = regression_model
         self.score = score
 
+    def __str__(self):
+        return 'Score: {}. Intercept: {} Coefficient: {}'.format(self.score, self.model.intercept_[0], self.model.coef_[0, 0])
+
     def predict(self, regressors):
         predictions = self.model.predict(regressors[:, np.newaxis])
         return predictions

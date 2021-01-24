@@ -6,17 +6,20 @@ import io
 import numpy as np
 import pandas as pd
 import requests
-import joblib
+
+import platform
+print('Python platform: {}'.format(platform.architecture()[0]))
 
 # Flask stuff
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
+# import dash_bootstrap_components as dbc
 
 from city_model import CityModel
 from enumerated_dates import EnumeratedDates
+from regression_models import calculate_regression_params, calc, SimpleLinearRegression
 import matplotlib.pyplot as plt
 
 print('{} version: {}'.format(np.__name__, np.__version__))
@@ -46,8 +49,8 @@ df = pd.read_csv(io.StringIO(s.decode('utf-8')))
 # 2a. Throw out nan values and other mess from the downloaded DataFrame.
 #   Thanks to God, Pandas has built-in functions for such a purpose
 # Output of Step 2a: df
-df.fillna(0, inplace=True)
-df.replace('-', 0., inplace=True)  # prefer mutable version because it modifies other views
+df.fillna(0, inplace=True) # prefer mutable versions because it modifies other views
+df.replace('-', 0., inplace=True)
 # print(df)
 
 #
@@ -61,58 +64,23 @@ dates = EnumeratedDates(keys[2:])
 
 #
 # 3. Calculate the regression model parameters.
-# The function below will be called for each city (row) in the prepared dataset
-#
-def calculate_regression_params(x, y, name):
-    from sklearn import linear_model
-    from sklearn.model_selection import train_test_split
-    model = linear_model.LinearRegression()
-    X = x.reshape(-1, 1)
-    Y = y.reshape(-1, 1)
-
-    # split the dataset into training part and test part
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
-    model.fit(X_train, Y_train)
-    score = model.score(X_test, Y_test)  # check score - the best possible score is 1.0
-    print('Score: {}. Intercept: {} Coefficient: {}'.format(score, model.intercept_[0], model.coef_[0, 0]))
-
-    # filename = 'finalized_model.sav'
-    # joblib.dump(model, filename)
-
-    return CityModel(city_name=name, data=y, regression_model=model, score=score)
-
 
 # Our Linear Regression model is based on SkLearn implementation which accept numpy arrays
 # Hence, we convert the prepared DataFrame into numpy array (and intentionally losing the captions raw)
 ndata = df.to_numpy()
-models = np.array([])
+city_models = np.array([])
+
+# The function 'calculate_regression_params' below will be called for each city (row) in the prepared dataset
 
 for row in ndata:
     # First two columns are defined as 'City' and 'Population'. We skip them
-    model = calculate_regression_params(dates.indices, row[2:], row[0])
-    models = np.append(models, model)
+    model = calculate_regression_params(x=dates.indices, y=row[2:], name=row[0])
+    # linear_model = SimpleLinearRegression('zeros')
+    # linear_model.train(dates.indices, row[2:], learning_rate=0.1, epochs=50)
+    models = np.append(city_models, model)
 
 
-def calc(row):
-    from sklearn import linear_model
-    from sklearn.model_selection import train_test_split
-    _model = linear_model.LinearRegression()
-
-    x = dates.indices
-    X = x.reshape(-1, 1)
-    y = row[2:]
-    Y = y.reshape(-1, 1)
-
-    # split the dataset into training part and test part
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
-    _model.fit(x_train, y_train)
-    score = _model.score(x_test, y_test)
-    print('Score: {}. Intercept: {} Coefficient: {}'.format(score, _model.intercept_[0], _model.coef_[0, 0]))
-
-    return CityModel(data=y, regression_model=model, city_name=row[0], score=score)
-
-
-_models = np.apply_along_axis(calc, 1, ndata)
+# _models = np.apply_along_axis(calc, 1, ndata)
 
 # Just show some regressions for largest cities
 # if the model's score is acceptable according to score
@@ -130,8 +98,8 @@ with dates:
     # plt.show()
 
     for i in np.arange(0, 4):
-        if _models[i].score > THRESHOLD:
-            _models[i].show_regression(dates.labels)
+        if city_models[i].score > THRESHOLD:
+            city_models[i].show_regression(dates.labels)
 
 # STYLE = [dbc.themes.FLATLY]
 # app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)
