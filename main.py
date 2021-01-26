@@ -19,7 +19,7 @@ from dash.dependencies import Input, Output
 
 from city_model import CityModel
 from enumerated_dates import EnumeratedDates
-from regression_models import calculate_regression_params, calc, SimpleLinearRegression
+from regressions import calculate_regression_params, calc, SimpleLinearRegression
 import matplotlib.pyplot as plt
 
 print('{} version: {}'.format(np.__name__, np.__version__))
@@ -65,7 +65,7 @@ dates = EnumeratedDates(keys[2:])
 #
 # 3. Calculate the regression model parameters.
 
-# Our Linear Regression model is based on SkLearn implementation which accept numpy arrays
+# The Linear Regression models implemented here (SkLearn and TensorFlow) accept numpy arrays.
 # Hence, we convert the prepared DataFrame into numpy array (and intentionally losing the captions raw)
 ndata = df.to_numpy()
 city_models = np.array([])
@@ -73,10 +73,15 @@ city_models = np.array([])
 # The function 'calculate_regression_params' below will be called for each city (row) in the prepared dataset
 
 for row in ndata:
-    # First two columns are defined as 'City' and 'Population'. We skip them
+    # First two columns are defined in the original DataFrame as 'City' and 'Population'. We skip them for the data
+
+    # SkLearn
     model = calculate_regression_params(x=dates.indices, y=row[2:], name=row[0])
+
+    # Uncomment for TenforFlow based model
     # linear_model = SimpleLinearRegression('zeros')
     # linear_model.train(dates.indices, row[2:], learning_rate=0.1, epochs=50)
+
     models = np.append(city_models, model)
 
 

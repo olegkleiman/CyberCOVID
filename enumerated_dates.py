@@ -4,11 +4,11 @@ class EnumeratedDates:
     def __init__(self, dates_labels):
         self.labels = dates_labels
 
-        enumeratedDates = np.array([])  # start with empty array
+        enumerated_dates = np.array([])  # start with empty array
         for idx, x in np.ndenumerate(dates_labels):
-            enumeratedDates = np.append(enumeratedDates, idx)
+            enumerated_dates = np.append(enumerated_dates, idx)
 
-        self.indices = enumeratedDates
+        self.indices = enumerated_dates
 
     def __enter__(self):
         return self.indices

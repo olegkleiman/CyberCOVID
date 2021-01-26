@@ -1,3 +1,3 @@
 # Cyber COVID
 
-## Project Aims: TODO
+## Project Goals: TODO

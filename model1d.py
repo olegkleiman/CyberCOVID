@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Model1D:
     def __init__(self, data, regression_model, score):
         self.data = data

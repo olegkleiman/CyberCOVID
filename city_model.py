@@ -5,6 +5,8 @@ import joblib
 from model1d import Model1D
 
 
+# Whatever regression model is used, this class abstracts it
+# from other functionality: displaying, saving etc.
 class CityModel(Model1D):
     def __init__(self, city_name, data, regression_model, score):
         super().__init__(data, regression_model, score)
@@ -16,7 +18,7 @@ class CityModel(Model1D):
 
     def load(self):
         filename = self.name + 'sav'
-        self.model= joblib.load(filename)
+        self.model = joblib.load(filename)
 
     def show_regression(self, regressors):
         plt.isinteractive(True)

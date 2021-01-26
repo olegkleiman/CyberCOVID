@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
 
+
 # TensorFlow implementation  of the Linear Regression
 class SimpleLinearRegression:
     def __init__(self, initializer='random'):
@@ -36,33 +37,35 @@ class SimpleLinearRegression:
         self.b.assign_sub(learning_rate * dy_db)
 
     def train(self, x, y, learning_rate=0.01, epochs=5):
-            X = x.reshape(-1, 1)
-            Y = y.reshape(-1, 1)
+        X = x.reshape(-1, 1)
+        Y = y.reshape(-1, 1)
 
-            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
 
-            if len(X.shape) == 1:
-                X = tf.reshape(X, [X.shape[0], 1])
+        if len(X.shape) == 1:
+            X = tf.reshape(X, [X.shape[0], 1])
 
-            self.m.assign([self.var] * X.shape[-1])
+        self.m.assign([self.var] * X.shape[-1])
 
-            for i in range(epochs):
-                print("Epoch: ", i)
+        for i in range(epochs):
+            print("Epoch: ", i)
 
-                self.update(X, y, learning_rate)
+            self.update(X, y, learning_rate)
+
 
 # SkLearn implementation of the Linear Regression
+# TODO: Write it as class with duck typing
 
 def calculate_regression_params(x, y, name):
-    model = linear_model.LinearRegression()
+    linear_regression_model = linear_model.LinearRegression()
     X = x.reshape(-1, 1)
     Y = y.reshape(-1, 1)
 
     # split the dataset into training part and test part
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=1)
-    model.fit(X_train, Y_train)
-    score = model.score(X_test, Y_test)  # check score - the best possible score is 1.0
-    model = CityModel(city_name=name, data=y, regression_model=model, score=score)
+    linear_regression_model.fit(X_train, Y_train)
+    score = linear_regression_model.score(X_test, Y_test)  # check score - the best possible score is 1.0
+    model = CityModel(city_name=name, data=y, regression_model=linear_regression_model, score=score)
     print(model)  # __str__ if redefined in Model1D
 
     return model
