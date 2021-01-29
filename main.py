@@ -97,7 +97,7 @@ with dates:
     for i in np.arange(0, 4):
         # %%
         ax = fig.add_subplot(2, 2, i + 1)
-        city_models[i].display(ax=ax, regressors=dates.labels)
+        city_models[i].display(axis=ax, regressors=dates.labels)
         # %%
     plt.show()
 
