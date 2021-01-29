@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 
 import platform
+
 print('Python platform: {}'.format(platform.architecture()[0]))
 
 # Flask stuff
@@ -49,7 +50,7 @@ df = pd.read_csv(io.StringIO(s.decode('utf-8')))
 # 2a. Throw out nan values and other mess from the downloaded DataFrame.
 #   Thanks to God, Pandas has built-in functions for such a purpose
 # Output of Step 2a: df
-df.fillna(0, inplace=True) # prefer mutable versions because it modifies other views
+df.fillna(0, inplace=True)  # prefer mutable versions because it modifies other views
 df.replace('-', 0., inplace=True)
 # print(df)
 
@@ -60,7 +61,6 @@ df.replace('-', 0., inplace=True)
 
 keys = df.keys()
 dates = EnumeratedDates(keys[2:])
-
 
 #
 # 3. Calculate the regression model parameters.
@@ -84,29 +84,22 @@ for row in ndata:
 
     city_models = np.append(city_models, model)
 
-
 # _models = np.apply_along_axis(calc, 1, ndata)
 
 # Just show some regressions for largest cities
 # if the model's score is acceptable according to score
 THRESHOLD = 0.9
 with dates:
-    # TODO
-    # plt.figure(figsize=(8, 7))
-    # fig, axs = plt.subplots(4)
-    # fig.suptitle('Infected spreads in most populated cities')
-    # x_new = np.linspace(0, 30, 100)
-    # for i in np.arange(0, 4):
-    #     y_new = models[i].predict(dates.labels)
-    #     axs[i].plot(x_new, y_new)
-    #     axs[i].set_title(models[i].name)
-    # plt.show()
 
+    fig = plt.figure(figsize=(8, 10))
+    fig.suptitle('Infected spreads in most populated cities')
+    x_new = np.linspace(0, 30, 100)
     for i in np.arange(0, 4):
-        if city_models[i].score > THRESHOLD:
-            # %%
-            city_models[i].display(dates.labels)
-            # %%
+        # %%
+        ax = fig.add_subplot(2, 2, i + 1)
+        city_models[i].display(ax=ax, regressors=dates.labels)
+        # %%
+    plt.show()
 
 # STYLE = [dbc.themes.FLATLY]
 # app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)

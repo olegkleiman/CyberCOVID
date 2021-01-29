@@ -20,18 +20,15 @@ class CityModel(Model1D):
         filename = self.name + 'sav'
         self.model = joblib.load(filename)
 
-    def display(self, regressors):
-        # plt.isinteractive(True)
-        plt.figure(figsize=(8, 7))
-        ax = plt.axes()
-        plt.title(self.name)
+    # def __rshift__(self, ax):
+    #     pass
+
+    def display(self, ax, regressors):
+        ax.title.set_text(self.name)
         ax.scatter(regressors, self.data)
 
         x_new = np.linspace(0, 30, 100)
         y_new = super().predict(x_new[:, np.newaxis])
-        ax.plot(x_new, y_new)
+        ax.plot(x_new, y_new, color='red')
+        ax.set_title(self.name)
 
-        ax.axis('tight')
-        # ax.xaxis_date()
-        # plt.figure.autofmt_xdate()
-        plt.show(block=True)
