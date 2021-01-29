@@ -82,7 +82,7 @@ for row in ndata:
     # linear_model = SimpleLinearRegression('zeros')
     # linear_model.train(dates.indices, row[2:], learning_rate=0.1, epochs=50)
 
-    models = np.append(city_models, model)
+    city_models = np.append(city_models, model)
 
 
 # _models = np.apply_along_axis(calc, 1, ndata)
@@ -104,7 +104,9 @@ with dates:
 
     for i in np.arange(0, 4):
         if city_models[i].score > THRESHOLD:
-            city_models[i].show_regression(dates.labels)
+            # %%
+            city_models[i].display(dates.labels)
+            # %%
 
 # STYLE = [dbc.themes.FLATLY]
 # app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)

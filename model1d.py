@@ -11,5 +11,5 @@ class Model1D:
         return 'Score: {}. Intercept: {} Coefficient: {}'.format(self.score, self.model.intercept_[0], self.model.coef_[0, 0])
 
     def predict(self, regressors):
-        predictions = self.model.predict(regressors[:, np.newaxis])
+        predictions = self.model.predict(regressors)
         return predictions
