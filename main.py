@@ -77,6 +77,7 @@ for row in ndata:
 
     # SkLearn
     model = calculate_regression_params(x=dates.indices, y=row[2:], name=row[0])
+    # model.save()
 
     # Uncomment for TenforFlow based model
     # linear_model = SimpleLinearRegression('zeros')
@@ -93,7 +94,7 @@ with dates:
 
     fig = plt.figure(figsize=(8, 10))
     fig.suptitle('Infected spreads in most populated cities')
-    x_new = np.linspace(0, 30, 100)
+
     for i in np.arange(0, 4):
         # %%
         ax = fig.add_subplot(2, 2, i + 1)

@@ -13,11 +13,12 @@ class CityModel(Model1D):
         self.name = city_name[::-1]  # reverse this Hebrew string
 
     def save(self):
-        filename = self.name + 'sav'
+        filename = self.name + '.sav'
         joblib.dump(self.model, filename)
+        return self
 
     def load(self):
-        filename = self.name + 'sav'
+        filename = self.name + '.sav'
         self.model = joblib.load(filename)
 
     # def __rshift__(self, ax):
