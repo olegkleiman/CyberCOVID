@@ -26,6 +26,7 @@ class CityModel(Model1D):
 
     def display(self, axe, regressors, ticks_number):
         axe.title.set_text(self.name)
+        axe.tick_params(axis='both', which='major', labelsize=8)
 
         # There are too much date labels for the plot.
         # We'll show only 'ticks_number' labels

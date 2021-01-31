@@ -91,7 +91,6 @@ for row in ndata:
 # if the model's score is acceptable according to score
 THRESHOLD = 0.9
 with dates:
-
     fig = plt.figure(figsize=(8, 12))
     fig.suptitle('Infected spreads in most populated cities')
 
