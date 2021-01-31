@@ -92,13 +92,13 @@ for row in ndata:
 THRESHOLD = 0.9
 with dates:
 
-    fig = plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(8, 12))
     fig.suptitle('Infected spreads in most populated cities')
 
     for i in np.arange(0, 4):
         # %%
         ax = fig.add_subplot(2, 2, i + 1)
-        city_models[i].display(axis=ax, regressors=dates.labels)
+        city_models[i].display(axe=ax, regressors=dates, ticks_number=10)
         # %%
     plt.show()
 

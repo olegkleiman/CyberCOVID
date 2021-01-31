@@ -1,7 +1,5 @@
-import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
-import math
 import joblib
 
 from model1d import Model1D
