@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+import mplcursors
 import numpy as np
+import math
 import joblib
 
 from model1d import Model1D
@@ -24,12 +26,23 @@ class CityModel(Model1D):
     # def __rshift__(self, ax):
     #     pass
 
-    def display(self, axis, regressors):
-        axis.title.set_text(self.name)
-        axis.scatter(regressors, self.data)
+    def display(self, axe, regressors, ticks_number):
+        axe.title.set_text(self.name)
 
-        x_new = np.linspace(0, 30, 100)
+        # There are too much date labels for the plot.
+        # We'll show only 'ticks_number' labels
+        tick_indices = (np.linspace(0, len(regressors.labels) - 1, ticks_number))
+        tick_indices = tick_indices.astype(int)
+        axe.set_xticks(tick_indices)
+
+        filtered_labels = regressors.labels[tick_indices]
+
+        axe.set_xticklabels(filtered_labels, rotation=40)
+        axe.scatter(regressors.indices, self.data, label='Cases')
+
+        x_new = np.linspace(0, len(regressors.labels) - 1, 100)
         y_new = super().predict(x_new[:, np.newaxis])
-        axis.plot(x_new, y_new, color='red')
-        axis.set_title(self.name)
+        lines = axe.plot(x_new, y_new, color='red', label='Prognosis')
 
+        axe.legend(fancybox=True, framealpha=1, loc='lower right')
+        mplcursors.cursor(lines)
