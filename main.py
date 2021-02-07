@@ -1,58 +1,30 @@
-# CyberCOVID project.
-
-# Project aims: TODO
-
-import io
-import numpy as np
-import pandas as pd
-import requests
-
-import platform
-
-print('Python platform: {}'.format(platform.architecture()[0]))
-
-# Flask stuff
 import dash
-import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
-# import dash_bootstrap_components as dbc
+import dash_core_components as dcc
+import plotly.express as px
+import plotly.graph_objs as go
 
-from city_model import CityModel
+import requests
+import io
+import pandas as pd
+import numpy as np
+
 from enumerated_dates import EnumeratedDates
-from regressions import calculate_regression_params, calc, SimpleLinearRegression
-import matplotlib.pyplot as plt
+from city_model import CityModel
 
-print('{} version: {}'.format(np.__name__, np.__version__))
-print('{} version: {}'.format(pd.__name__, pd.__version__))
-
-#
-# 1. Download the raw data into Pandas DataFrame.
-#   Note that is raw data in csv format and it differs from the data as displayed
-#   by GitHub at https://github.com/idandrd/israel-covid19-data/blob/master/CityData.csv
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 url = "https://raw.githubusercontent.com/idandrd/israel-covid19-data/master/CityData.csv"
 s = requests.get(url).content
 
 df = pd.read_csv(io.StringIO(s.decode('utf-8')))
 
-#
-# 2. Prepare the downloaded data for further analysis
-#
-# We're going to calculate the regression params for each
-# city (row) in the dataset. The input for the regression is:
-#   - the set (numpy array) of the infected cases for each date
-#   - the dates as defined in the DataFrame's first row
-#   * Note that the dates were downloaded in "dates" format
-#       and in order to serve as such the input, the dates values should be
-#       converted to numbers (see Step 2b)
-
 # 2a. Throw out nan values and other mess from the downloaded DataFrame.
 #   Thanks to God, Pandas has built-in functions for such a purpose
 # Output of Step 2a: df
 df.fillna(0, inplace=True)  # prefer mutable versions because it modifies other views
 df.replace('-', 0., inplace=True)
-# print(df)
 
 #
 # 2b. Prepare the dates obtained from the DataFrame to participate in regression:
@@ -62,52 +34,62 @@ df.replace('-', 0., inplace=True)
 keys = df.keys()
 dates = EnumeratedDates(keys[2:])
 
-#
-# 3. Calculate the regression model parameters.
+city_models = []
+for i in range(df['City'].count()):
+    city_models.append({
+        "name": df['City'][i],
+        "rowId": i
+    })
 
-# The Linear Regression models implemented here (SkLearn and TensorFlow) accept numpy arrays.
-# Hence, we convert the prepared DataFrame into numpy array (and intentionally losing the captions raw)
-ndata = df.to_numpy()
-city_models = np.array([])
+#     [{
+#     "name" : "Jerusalem",
+#     "rowId": 0
+# },
+# {
+#     "name": "Tel-Aviv",
+#     "rowId": 1
+# }]
 
-# The function 'calculate_regression_params' below will be called for each city (row) in the prepared dataset
+# city_names = df.loc[:, "City"]
 
-for row in ndata:
-    # First two columns are defined in the original DataFrame as 'City' and 'Population'. We skip them for the data
+app.layout = html.Div(children=[
+    html.H1(children='CyberCOVID'),
+    html.Div([
+        dcc.Dropdown(
+            id='city-name-dropdown',
+            options=[
+                {"label": x['name'], "value": x['rowId']} for x in city_models
+            ]
+        ),
+        html.Div(id='dd-output-container'),
+        dcc.Graph(id='city-graph')
+    ])
+])
 
-    # SkLearn
-    model = calculate_regression_params(x=dates.indices, y=row[2:], name=row[0])
-    # model.save()
 
-    # Uncomment for TenforFlow based model
-    # linear_model = SimpleLinearRegression('zeros')
-    # linear_model.train(dates.indices, row[2:], learning_rate=0.1, epochs=50)
+@app.callback(
+    dash.dependencies.Output(component_id='city-graph', component_property='figure'),
+    [dash.dependencies.Input('city-name-dropdown', 'value')]
+)
+def city_changed(row_id):
+    # list comprehension
+    # city_model = next((x for x in city_models if x['name'] == city_name), None)
 
-    city_models = np.append(city_models, model)
+    fig = go.Figure(layout=go.Layout(height=400, width=1200))
 
-# _models = np.apply_along_axis(calc, 1, ndata)
+    try:
+        row = df.iloc[row_id].to_numpy()
+    except TypeError:
+        return fig
+    else:
+        model = CityModel(city_name=row[0], x=dates.indices, y=row[2:])
 
-# Just show some regressions for largest cities
-# if the model's score is acceptable according to score
-THRESHOLD = 0.9
-with dates:
-    fig = plt.figure(figsize=(8, 12))
-    fig.suptitle('Infected spreads in most populated cities')
+        fig.layout.title = row[0]
+        model.display(figure=fig, regressors=dates)
+        return fig
 
-    for i in np.arange(0, 4):
-        # %%
-        ax = fig.add_subplot(2, 2, i + 1)
-        city_models[i].display(axe=ax, regressors=dates, ticks_number=10)
-        # %%
-    plt.show()
+    # return 'You have selected "{}"'.format(city_model['name'] if city_model is not None else 'None')
 
-# STYLE = [dbc.themes.FLATLY]
-# app = dash.Dash('Cyber COVID', external_stylesheets=STYLE)
-# app.layout = dbc.Container(
-#     [
-#         html.H1("Cyber COVID"),
-#         html.Hr()
-#     ], fluid=True
-# )
-# if __name__ == "__main__":
-#     app.run_server()
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
