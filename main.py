@@ -1,13 +1,11 @@
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
-import plotly.express as px
 import plotly.graph_objs as go
 
 import requests
 import io
 import pandas as pd
-import numpy as np
 
 from enumerated_dates import EnumeratedDates
 from city_model import CityModel
